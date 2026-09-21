@@ -1,14 +1,16 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DexStories from "@/components/DexStories";
+import EvolutionLine from "@/components/EvolutionLine";
 import FunFacts from "@/components/FunFacts";
+import LoreCards from "@/components/LoreCards";
 import MoveList from "@/components/MoveList";
 import PokemonShowcase, {
   type ShowcaseEntry,
 } from "@/components/PokemonShowcase";
 import StatBars from "@/components/StatBars";
 import StrategyPanel from "@/components/StrategyPanel";
+import Tabs from "@/components/Tabs";
 import TypeMatchups from "@/components/TypeMatchups";
 import { learnedMoves } from "@/lib/moves";
 import {
@@ -145,65 +147,63 @@ export default async function PokemonPage({
         </div>
       </div>
 
-      <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold">Type matchups</h2>
-        <TypeMatchups types={entry.types} />
-      </section>
+      <Tabs
+        tabs={[
+          {
+            id: "about",
+            label: "Stories",
+            icon: "📖",
+            content: (
+              <div className="flex flex-col gap-5">
+                <FunFacts entry={entry} />
+                <LoreCards id={entry.id} />
+                <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
+                  <h2 className="font-semibold">Dex stories</h2>
+                  <p className="mb-4 mt-1 text-xs text-muted">
+                    What each game&apos;s Pokédex says about it.
+                  </p>
+                  <DexStories stories={entry.stories} />
+                </section>
+              </div>
+            ),
+          },
+          {
+            id: "matchups",
+            label: "Matchups",
+            icon: "⚔️",
+            content: (
+              <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
+                <h2 className="mb-4 font-semibold">Type matchups</h2>
+                <TypeMatchups types={entry.types} />
+              </section>
+            ),
+          },
+          {
+            id: "strategy",
+            label: "Strategy",
+            icon: "🧠",
+            content: <StrategyPanel entry={entry} />,
+          },
+          {
+            id: "moves",
+            label: "Moves",
+            icon: "✨",
+            content: (
+              <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
+                <h2 className="mb-4 font-semibold">Moves it learns</h2>
+                <MoveList moves={learnedMoves(entry.moves)} />
+              </section>
+            ),
+          },
+          {
+            id: "family",
+            label: "Family",
+            icon: "🧬",
+            content: <EvolutionLine entry={entry} />,
+          },
+        ]}
+      />
 
-      <FunFacts entry={entry} />
-
-      <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
-        <h2 className="font-semibold">Dex stories</h2>
-        <p className="mb-4 mt-1 text-xs text-muted">
-          What each game&apos;s Pokédex says about it.
-        </p>
-        <DexStories stories={entry.stories} />
-      </section>
-
-      <StrategyPanel entry={entry} />
-
-      <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold">Moves it learns</h2>
-        <MoveList moves={learnedMoves(entry.moves)} />
-      </section>
-
-      {entry.evolutionChain.length > 1 && (
-        <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
-          <h2 className="mb-4 font-semibold">Evolution line</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            {entry.evolutionChain.map((stage, index) => {
-              const stageEntry = getPokemon(stage.id);
-              return (
-                <div key={stage.id} className="flex items-center gap-2">
-                  {index > 0 && <span className="text-muted">→</span>}
-                  <Link
-                    href={`/pokemon/${stage.id}`}
-                    className={`flex flex-col items-center rounded-2xl border px-4 py-3 transition-colors ${
-                      stage.id === entry.id
-                        ? "border-accent bg-accent-soft"
-                        : "border-line hover:bg-surface-soft"
-                    }`}
-                  >
-                    {stageEntry?.sprite && (
-                      <div className="relative h-16 w-16">
-                        <Image
-                          src={stageEntry.sprite}
-                          alt={displayName(stage.name)}
-                          fill
-                          sizes="64px"
-                          className="object-contain"
-                          unoptimized
-                        />
-                      </div>
-                    )}
-                    <span className="text-xs">{displayName(stage.name)}</span>
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
     </div>
   );
 }
