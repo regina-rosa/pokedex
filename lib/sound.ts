@@ -46,10 +46,12 @@ function note(
   const gain = ctx.createGain();
   oscillator.type = type;
   oscillator.frequency.value = frequency;
-  // Soft attack and release so the chiptune does not click between notes.
+  // Rounded attack and a long release so held notes breathe instead of clicking.
+  const attack = Math.min(0.06, duration * 0.25);
+  const release = Math.min(0.25, duration * 0.45);
   gain.gain.setValueAtTime(0, startAt);
-  gain.gain.linearRampToValueAtTime(volume, startAt + 0.02);
-  gain.gain.setValueAtTime(volume, startAt + duration - 0.05);
+  gain.gain.linearRampToValueAtTime(volume, startAt + attack);
+  gain.gain.setValueAtTime(volume, startAt + duration - release);
   gain.gain.linearRampToValueAtTime(0, startAt + duration);
   oscillator.connect(gain).connect(destination);
   oscillator.start(startAt);
@@ -78,38 +80,85 @@ export function playSound(kind: SoundKind) {
   }
 }
 
-// A gentle four-bar loop in C major, written as [frequency, beats].
-const MELODY: [number, number][] = [
-  [523.25, 1], [659.25, 1], [783.99, 1], [659.25, 1],
-  [587.33, 1], [698.46, 1], [880.0, 1], [698.46, 1],
-  [523.25, 1], [659.25, 1], [1046.5, 1], [783.99, 1],
-  [880.0, 2], [783.99, 2],
+/**
+ * "Home Town" — an original composition, not an arrangement of any game music.
+ * It aims for the same unhurried, nostalgic mood as a starting-town theme:
+ * slow tempo, warm major key, soft triangle lead over rocking arpeggios.
+ */
+const C3 = 130.81, F3 = 174.61, G3 = 196.0, A3 = 220.0, B3 = 246.94;
+const C4 = 261.63, D4 = 293.66, E4 = 329.63, F4 = 349.23, G4 = 392.0, A4 = 440.0, B4 = 493.88;
+const C5 = 523.25, D5 = 587.33, E5 = 659.25, G5 = 783.99, A5 = 880.0;
+
+type Chord = { bass: number; notes: number[] };
+
+// Eight bars of I - V - vi - IV - I - V - IV - V in C major.
+const PROGRESSION: Chord[] = [
+  { bass: C3, notes: [C4, E4, G4] },
+  { bass: G3, notes: [B3, D4, G4] },
+  { bass: A3, notes: [A3, C4, E4] },
+  { bass: F3, notes: [F3, A3, C4] },
+  { bass: C3, notes: [C4, E4, G4] },
+  { bass: G3, notes: [B3, D4, G4] },
+  { bass: F3, notes: [F3, A3, C4] },
+  { bass: G3, notes: [B3, D4, G4] },
 ];
 
-const BASS: [number, number][] = [
-  [130.81, 2], [146.83, 2], [174.61, 2], [196.0, 2],
-  [130.81, 2], [174.61, 2], [196.0, 2], [196.0, 2],
+// One entry per bar: the melody phrase played over that chord, as [note, beats].
+const MELODY: [number, number][][] = [
+  [[E4, 1], [G4, 1], [C5, 2]],
+  [[D5, 1], [B4, 1], [G4, 2]],
+  [[A4, 1], [C5, 1], [E5, 2]],
+  [[D5, 1], [C5, 1], [A4, 2]],
+  [[E5, 1], [G5, 1], [A5, 2]],
+  [[G5, 1], [E5, 1], [D5, 2]],
+  [[C5, 1], [A4, 1], [F4, 2]],
+  [[G4, 2], [C5, 2]],
 ];
 
-const BEAT = 0.34;
+const BEAT = 0.55; // roughly 109 bpm — walking pace, not marching
+const BEATS_PER_BAR = 4;
 
 function scheduleLoop() {
   const ctx = getContext();
   if (!ctx || !musicGain) return;
 
-  let cursor = ctx.currentTime + 0.1;
-  for (const [frequency, beats] of MELODY) {
-    note(ctx, frequency, cursor, beats * BEAT * 0.9, "square", 0.16, musicGain);
-    cursor += beats * BEAT;
-  }
+  const start = ctx.currentTime + 0.1;
 
-  let bassCursor = ctx.currentTime + 0.1;
-  for (const [frequency, beats] of BASS) {
-    note(ctx, frequency, bassCursor, beats * BEAT * 0.9, "triangle", 0.2, musicGain);
-    bassCursor += beats * BEAT;
-  }
+  PROGRESSION.forEach((chord, bar) => {
+    const barStart = start + bar * BEATS_PER_BAR * BEAT;
 
-  const loopLength = (cursor - ctx.currentTime) * 1000;
+    note(ctx, chord.bass, barStart, BEAT * 3.6, "sine", 0.22, musicGain!);
+
+    // Rocking arpeggio underneath: low, high, middle, high.
+    const pattern = [chord.notes[0], chord.notes[2], chord.notes[1], chord.notes[2]];
+    pattern.forEach((frequency, step) => {
+      note(
+        ctx,
+        frequency,
+        barStart + step * BEAT,
+        BEAT * 0.8,
+        "sine",
+        0.07,
+        musicGain!
+      );
+    });
+
+    let melodyCursor = barStart;
+    for (const [frequency, beats] of MELODY[bar]) {
+      note(
+        ctx,
+        frequency,
+        melodyCursor,
+        beats * BEAT * 0.92,
+        "triangle",
+        0.13,
+        musicGain!
+      );
+      melodyCursor += beats * BEAT;
+    }
+  });
+
+  const loopLength = PROGRESSION.length * BEATS_PER_BAR * BEAT * 1000;
   loopTimer = setTimeout(scheduleLoop, loopLength - 60);
 }
 
