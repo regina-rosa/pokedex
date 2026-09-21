@@ -25,6 +25,7 @@ export type Pokemon = {
   isBaby: boolean;
   captureRate: number;
   eggGroups: string[];
+  stories: { text: string; versions: string[] }[];
   moves: { name: string; level: number }[];
   evolutionChain: { id: number; name: string }[];
 };

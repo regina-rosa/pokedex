@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import DexStories from "@/components/DexStories";
+import FunFacts from "@/components/FunFacts";
 import MoveList from "@/components/MoveList";
 import PokemonShowcase, {
   type ShowcaseEntry,
@@ -146,6 +148,16 @@ export default async function PokemonPage({
       <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
         <h2 className="mb-4 font-semibold">Type matchups</h2>
         <TypeMatchups types={entry.types} />
+      </section>
+
+      <FunFacts entry={entry} />
+
+      <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
+        <h2 className="font-semibold">Dex stories</h2>
+        <p className="mb-4 mt-1 text-xs text-muted">
+          What each game&apos;s Pokédex says about it.
+        </p>
+        <DexStories stories={entry.stories} />
       </section>
 
       <StrategyPanel entry={entry} />

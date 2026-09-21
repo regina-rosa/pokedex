@@ -29,6 +29,28 @@ function idFromUrl(url) {
   return Number(parts[parts.length - 1]);
 }
 
+const MAX_STORIES = 10;
+
+/**
+ * Games reuse the same Pokédex text a lot, so group identical entries and
+ * keep the newest handful.
+ */
+function dexStories(species) {
+  const byText = new Map();
+  for (const entry of species.flavor_text_entries) {
+    if (entry.language.name !== "en") continue;
+    const text = entry.flavor_text.replace(/[\n\f­]/g, " ").replace(/\s+/g, " ").trim();
+    if (!text) continue;
+    if (!byText.has(text)) byText.set(text, []);
+    byText.get(text).push(entry.version.name);
+  }
+
+  return [...byText.entries()]
+    .slice(-MAX_STORIES)
+    .reverse()
+    .map(([text, versions]) => ({ text, versions }));
+}
+
 function flattenEvolutionChain(node, acc = []) {
   acc.push({ id: idFromUrl(node.species.url), name: node.species.name });
   for (const next of node.evolves_to) flattenEvolutionChain(next, acc);
@@ -68,6 +90,7 @@ async function buildEntry(id) {
 
   return {
     eggGroups: species.egg_groups.map((g) => g.name),
+    stories: dexStories(species),
     moves: levelUpMoves(pokemon),
     id: pokemon.id,
     name: pokemon.name,
