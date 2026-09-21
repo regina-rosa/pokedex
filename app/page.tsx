@@ -1,19 +1,19 @@
 import PokedexBrowser from "@/components/PokedexBrowser";
-import { pokemon } from "@/lib/pokemon";
+import { summaries } from "@/lib/pokemon";
 
 export default function Home() {
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">
-          The original 151
+          Every Pokémon, all nine regions
         </h1>
         <p className="mt-1 text-sm text-muted">
-          Search, filter by type, and compare base stats across the Kanto
-          region.
+          Search all {summaries.length} Pokémon — filter by type or region,
+          save favorites, and peek at their shiny forms.
         </p>
       </div>
-      <PokedexBrowser entries={pokemon} />
+      <PokedexBrowser entries={summaries} />
     </div>
   );
 }
