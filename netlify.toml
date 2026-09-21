@@ -1,5 +1,8 @@
 [build]
   command = "npm run build"
+  # Without this, Netlify's own git builds default to the repo root and the
+  # Next.js runtime refuses to publish it.
+  publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
