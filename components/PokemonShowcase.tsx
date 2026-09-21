@@ -4,14 +4,23 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import TypeBadge from "./TypeBadge";
 import { loadFavorites, toggleFavorite } from "@/lib/favorites";
-import {
-  displayName,
-  pokedexNumber,
-  typeColor,
-  type Pokemon,
-} from "@/lib/pokemon";
+import { displayName, pokedexNumber, typeColor, type Pokemon } from "@/lib/pokemon";
 
-export default function PokemonShowcase({ entry }: { entry: Pokemon }) {
+/** Only the fields the showcase renders, so moves and evolutions stay server-side. */
+export type ShowcaseEntry = Pick<
+  Pokemon,
+  | "id"
+  | "name"
+  | "genus"
+  | "types"
+  | "artwork"
+  | "shinyArtwork"
+  | "cry"
+  | "isLegendary"
+  | "isMythical"
+>;
+
+export default function PokemonShowcase({ entry }: { entry: ShowcaseEntry }) {
   const [shiny, setShiny] = useState(false);
   const [favorite, setFavorite] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);

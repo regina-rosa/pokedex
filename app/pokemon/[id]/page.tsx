@@ -1,19 +1,39 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import PokemonShowcase from "@/components/PokemonShowcase";
+import MoveList from "@/components/MoveList";
+import PokemonShowcase, {
+  type ShowcaseEntry,
+} from "@/components/PokemonShowcase";
 import StatBars from "@/components/StatBars";
+import StrategyPanel from "@/components/StrategyPanel";
 import TypeMatchups from "@/components/TypeMatchups";
+import { learnedMoves } from "@/lib/moves";
 import {
   displayName,
   generationNames,
   getPokemon,
   pokemon,
   typeColor,
+  type Pokemon,
 } from "@/lib/pokemon";
 
 export function generateStaticParams() {
   return pokemon.map((entry) => ({ id: String(entry.id) }));
+}
+
+function toShowcaseEntry(entry: Pokemon): ShowcaseEntry {
+  return {
+    id: entry.id,
+    name: entry.name,
+    genus: entry.genus,
+    types: entry.types,
+    artwork: entry.artwork,
+    shinyArtwork: entry.shinyArtwork,
+    cry: entry.cry,
+    isLegendary: entry.isLegendary,
+    isMythical: entry.isMythical,
+  };
 }
 
 export async function generateMetadata({ params }: PageProps<"/pokemon/[id]">) {
@@ -67,7 +87,7 @@ export default async function PokemonPage({
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr]">
-        <PokemonShowcase entry={entry} />
+        <PokemonShowcase entry={toShowcaseEntry(entry)} />
 
         <div className="flex flex-col gap-5">
           <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
@@ -126,6 +146,13 @@ export default async function PokemonPage({
       <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
         <h2 className="mb-4 font-semibold">Type matchups</h2>
         <TypeMatchups types={entry.types} />
+      </section>
+
+      <StrategyPanel entry={entry} />
+
+      <section className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
+        <h2 className="mb-4 font-semibold">Moves it learns</h2>
+        <MoveList moves={learnedMoves(entry.moves)} />
       </section>
 
       {entry.evolutionChain.length > 1 && (

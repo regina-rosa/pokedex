@@ -40,6 +40,24 @@ function generationNumber(name) {
   return romans.indexOf(name.replace("generation-", "")) + 1;
 }
 
+// Every move any Pokémon learns, so we can fetch each move's details once.
+const seenMoves = new Set();
+
+function levelUpMoves(pokemon) {
+  const moves = [];
+  for (const entry of pokemon.moves) {
+    const levelUps = entry.version_group_details.filter(
+      (d) => d.move_learn_method.name === "level-up"
+    );
+    if (levelUps.length === 0) continue;
+    // The last entry is the most recent game the move appears in.
+    const latest = levelUps[levelUps.length - 1];
+    moves.push({ name: entry.move.name, level: latest.level_learned_at });
+    seenMoves.add(entry.move.name);
+  }
+  return moves.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+}
+
 async function buildEntry(id) {
   const [pokemon, species] = await Promise.all([
     getJson(`${API}/pokemon/${id}`),
@@ -49,6 +67,8 @@ async function buildEntry(id) {
   const chain = await getChain(species.evolution_chain.url);
 
   return {
+    eggGroups: species.egg_groups.map((g) => g.name),
+    moves: levelUpMoves(pokemon),
     id: pokemon.id,
     name: pokemon.name,
     generation: generationNumber(species.generation.name),
@@ -74,6 +94,27 @@ async function buildEntry(id) {
     captureRate: species.capture_rate,
     evolutionChain: flattenEvolutionChain(chain.chain),
   };
+}
+
+async function buildMoveIndex() {
+  const names = [...seenMoves];
+  const index = {};
+  for (let start = 0; start < names.length; start += BATCH) {
+    const slice = names.slice(start, start + BATCH);
+    const details = await Promise.all(
+      slice.map((name) => getJson(`${API}/move/${name}`))
+    );
+    for (const move of details) {
+      index[move.name] = {
+        type: move.type.name,
+        power: move.power,
+        accuracy: move.accuracy,
+        pp: move.pp,
+        damageClass: move.damage_class.name,
+      };
+    }
+  }
+  return index;
 }
 
 async function buildTypeChart() {
@@ -119,6 +160,13 @@ async function main() {
     JSON.stringify(chart, null, 2)
   );
   console.log(`wrote ${Object.keys(chart).length} types to data/types.json`);
+
+  const moves = await buildMoveIndex();
+  await writeFile(
+    new URL("../data/moves.json", import.meta.url),
+    JSON.stringify(moves)
+  );
+  console.log(`wrote ${Object.keys(moves).length} moves to data/moves.json`);
 }
 
 main().catch((err) => {

@@ -24,6 +24,8 @@ export type Pokemon = {
   isMythical: boolean;
   isBaby: boolean;
   captureRate: number;
+  eggGroups: string[];
+  moves: { name: string; level: number }[];
   evolutionChain: { id: number; name: string }[];
 };
 
