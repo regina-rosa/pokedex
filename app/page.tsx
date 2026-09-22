@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { categories } from "@/lib/categories";
+import { categoryList } from "@/lib/categories";
 import { summaries } from "@/lib/pokemon";
 
 export default function Home() {
@@ -10,8 +10,8 @@ export default function Home() {
           My little collections
         </h1>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-          A shelf for the things I like — browse a category, read about it, and
-          keep track of what I own.
+          A shelf for the things I like — browse the characters, episodes and
+          films behind each one.
         </p>
       </header>
 
@@ -22,8 +22,7 @@ export default function Home() {
         >
           <span
             aria-hidden
-            className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full opacity-20 blur-2xl"
-            style={{ backgroundColor: "var(--accent)" }}
+            className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-accent opacity-20 blur-2xl"
           />
           <span
             aria-hidden
@@ -31,18 +30,17 @@ export default function Home() {
           />
           <h2 className="relative mt-3 text-xl font-semibold">Pokémon</h2>
           <p className="relative mt-1 text-sm text-muted">
-            All {summaries.length} of them — stats, types, moves, shinies,
-            natures, team partners and lore.
+            Stats, types, moves, shinies, natures, team partners and lore.
           </p>
           <span className="relative mt-3 inline-block rounded-full bg-accent-soft px-3 py-1 text-[11px] font-medium text-accent">
-            Full database
+            {summaries.length} Pokémon
           </span>
         </Link>
 
-        {categories.map((category) => (
+        {categoryList.map((category) => (
           <Link
             key={category.slug}
-            href={`/collection/${category.slug}`}
+            href={`/${category.slug}`}
             className="group relative overflow-hidden rounded-3xl border border-line bg-surface p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
           >
             <span
@@ -69,7 +67,7 @@ export default function Home() {
                 color: category.accent,
               }}
             >
-              Collection log
+              {category.count}
             </span>
           </Link>
         ))}

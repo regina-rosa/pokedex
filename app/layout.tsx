@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "My little collections",
   description:
-    "A shelf for the things I like — Pokémon, Sylvanian Families, Barbie, Chiikawa and Hamtaro.",
+    "A shelf for the things I like — Pokémon, SpongeBob, Disney and Studio Ghibli.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
