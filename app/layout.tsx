@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pokédex",
+  title: "My little collections",
   description:
-    "Browse every Pokémon — stats, types, shinies, evolutions, and matchups.",
+    "A shelf for the things I like — Pokémon, Sylvanian Families, Barbie, Chiikawa and Hamtaro.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 className="relative h-6 w-6 rounded-full border-2 border-foreground bg-accent shadow-[0_0_16px_rgba(255,95,162,0.6)] transition-transform group-hover:rotate-180 before:absolute before:inset-x-0 before:top-1/2 before:h-[2px] before:-translate-y-1/2 before:bg-foreground after:absolute after:left-1/2 after:top-1/2 after:h-2 after:w-2 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-full after:border-2 after:border-foreground after:bg-surface"
               />
               <span className="text-lg font-semibold tracking-tight">
-                Pokédex
+                My collections
               </span>
             </Link>
             <span className="ml-auto">
